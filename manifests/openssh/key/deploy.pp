@@ -9,9 +9,9 @@ define keymaster::openssh::key::deploy (
 
   include keymaster::params
 
-  if ! defined(User[$user]) {
-    fail("The user '${user}' has not been defined in Puppet")
-  }
+#  if ! defined(User[$user]) {
+#    fail("The user '${user}' has not been defined in Puppet")
+#  }
 
   # get homedir and primary group of $user
   $home  = getparam(User[$user],'home')
@@ -68,10 +68,11 @@ define keymaster::openssh::key::deploy (
     # create client user's .ssh file if defined already
     if ! defined(File[ "${home}/.ssh" ]) {
       file { "${home}/.ssh":
-        ensure => 'directory',
-        owner  => $user,
-        group  => $real_group,
-        mode   => '0700',
+        ensure  => 'directory',
+        owner   => $user,
+        group   => $real_group,
+        mode    => '0700',
+        require => User[$user],
       }
     }
 
@@ -81,7 +82,7 @@ define keymaster::openssh::key::deploy (
       owner   => $user,
       group   => $real_group,
       mode    => '0600',
-      require => File["${home}/.ssh"],
+      require => [ File["${home}/.ssh"], User[$user] ],
     }
 
     file { "${key_tgt_file}.pub":
@@ -90,7 +91,7 @@ define keymaster::openssh::key::deploy (
       owner   => $user,
       group   => $real_group,
       mode    => '0644',
-      require => File["${home}/.ssh"],
+      require => [ File["${home}/.ssh"], User[$user] ],
     }
 
   } else {

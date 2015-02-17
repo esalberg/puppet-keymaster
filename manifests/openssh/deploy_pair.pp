@@ -9,9 +9,9 @@ define keymaster::openssh::deploy_pair (
     validate_re($ensure,['^present$','^absent$'])
   }
 
-  if ! defined(User[$user]) {
-    fail("The user '${user}' has not been defined in Puppet")
-  }
+#  if ! defined(User[$user]) {
+#    fail("The user '${user}' has not been defined in Puppet")
+#  }
 
   $clean_name = regsubst($name, '@', '_at_')
 
@@ -22,12 +22,14 @@ define keymaster::openssh::deploy_pair (
       user      => $user,
       ensure    => $ensure,
       filename  => $filename,
+      require   => User[$user],
     }
 
   } elsif ( $user and $ensure ) {
     Keymaster::Openssh::Key::Deploy <<| tag == $clean_name |>> {
       user   => $user,
       ensure => $ensure,
+      require   => User[$user],
     }
 
   } elsif ( $ensure and $filename ) {
@@ -40,11 +42,13 @@ define keymaster::openssh::deploy_pair (
     Keymaster::Openssh::Key::Deploy <<| tag == $clean_name |>> {
       user     => $user,
       filename => $filename,
+      require   => User[$user],
     }
 
   } elsif ( $user ) {
     Keymaster::Openssh::Key::Deploy <<| tag == $clean_name |>> {
       user => $user,
+      require   => User[$user],
     }
 
   } else {

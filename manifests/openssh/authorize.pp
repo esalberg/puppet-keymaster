@@ -9,9 +9,9 @@ define keymaster::openssh::authorize (
     validate_re($ensure,['^present$','^absent$'])
   }
 
-  if ! defined(User[$user]) {
-    fail("The user '${user}' has not been defined in Puppet")
-  }
+#  if ! defined(User[$user]) {
+#    fail("The user '${user}' has not been defined in Puppet")
+#  }
 
   $clean_name = regsubst($name, '@', '_at_')
   # Override the defaults set in sshauth::key, as needed.
@@ -24,18 +24,21 @@ define keymaster::openssh::authorize (
       user    => $user,
       ensure  => $ensure,
       options => $options,
+      require => User[$user],
     }
 
   } elsif ( $user and $ensure ) {
     Keymaster::Openssh::Key::Authorized_key <<| tag == $clean_name |>> {
       ensure => $ensure,
       user   => $user,
+      require => User[$user],
     }
 
   } elsif ( $user and $options ) {
     Keymaster::Openssh::Key::Authorized_key <<| tag == $clean_name |>> {
       user    => $user,
       options => $options,
+      require => User[$user],
     }
 
   } elsif ( $options and $ensure ) {
@@ -47,6 +50,7 @@ define keymaster::openssh::authorize (
   } elsif $user {
     Keymaster::Openssh::Key::Authorized_key <<| tag == $clean_name |>> {
       user  => $user,
+      require => User[$user],
     }
 
   } else {
